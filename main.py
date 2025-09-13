@@ -1,11 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
+import json_read_catalog
 
 class Vendr:
     def __init__(self,positions):
         self.products_url = [] # save products_url
         # create url element for work
         self.url_positions = []
+        self.url_product = []
         for position in positions:
             position_text = position.replace(" ","-").lower()
             self.url_positions.append(f"https://www.vendr.com/categories/{position_text}")
@@ -19,7 +21,9 @@ class Vendr:
         # for start work only with
         # https://www.vendr.com/categories/devops
         self.open_categories()
-        # print(len(self.products_url))
+
+
+        print(len(self.url_product))
 
     def open_categories(self):
         # for url_position in self.url_positions:
@@ -29,20 +33,12 @@ class Vendr:
 
         # # I think It is don't auto text for avoid parsing data (rt-Text rt-r-size-2 rt-truncate)
         for parse_category in career_soup.find_all("h2"):
-            if parse_category.text == "Browse all categories":
+            if (parse_category.text == "Browse all categories") | (parse_category.text == "Categories in DevOps"):
                 continue
-            code_category_url = parse_category.text.replace("(","").replace(")","").replace("/","-").replace(" ","-").lower()
-            # create url to category
-            categories_url = f"https://www.vendr.com/categories/{code_category_url}?page=1"
-            self.get_element_catalog(categories_url)
-
-    def get_element_catalog(self, url_category):
-        catalog_page = requests.get(url_category, headers=self.header)
-        catalog_soup = BeautifulSoup(catalog_page.content, "lxml")
-        for element_catalog in catalog_soup.find_all("a",class_="_card_gl3kq_9 _card_1u7u9_1 _cardLink_1q928_1"):
-            print(element_catalog.get("href"))
-
-
+            # print(parse_category.text)
+            array_jrcts =json_read_catalog.json_read_cat("devops", parse_category.text)
+            for array_jrct in array_jrcts:
+                self.url_product.append(array_jrct)
 
 
 
