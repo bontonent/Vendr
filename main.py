@@ -13,8 +13,15 @@ class Vendr:
         # try work with him( maybe need User agent
         # for start work only with
         # https://www.vendr.com/categories/devops
+        url = "https://www.vendr.com/categories/devops"
+        print("work")
 
-        print(self.url_positions)
+        page = requests.get(url)
+        page_soup = BeautifulSoup(page.content, "lxml")
+
+        for titles in page_soup.find_all("h1"):
+            print(titles.text)
+
 
 
 
