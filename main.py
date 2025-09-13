@@ -14,9 +14,10 @@ class Vendr:
         # for start work only with
         # https://www.vendr.com/categories/devops
         url = "https://www.vendr.com/categories/devops"
-        print("work")
-
-        page = requests.get(url)
+        header = {
+            "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+        }
+        page = requests.get(url, headers = header)
         page_soup = BeautifulSoup(page.content, "lxml")
 
         for titles in page_soup.find_all("h1"):
