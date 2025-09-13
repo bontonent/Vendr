@@ -30,3 +30,9 @@ https://www.vendr.com/marketplace/outsystems
 - Or for something need loging in account and wait 2 min
 
 ![img.png](photo_md/img4.png)
+
+
+# think
+### I think it is don't random class
+example: rt-r-weight-bold
+rt-r- (in linux usualy say about, layer use or see)

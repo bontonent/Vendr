@@ -9,7 +9,6 @@ def json_read_cat(position,name_category):
     while True:
         i = i + 1; page_data_for_search = []
         url = f"https://www.vendr.com/categories/{position}/{re_name_category}?page={i}&_data=routes%2F_marketplace.categories.%24categorySlug.%24subCategorySlug._index"
-        print(url)
         params = {
             "facets": [],
             "sortParam": "RELEVANCE",
