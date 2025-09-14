@@ -1,7 +1,7 @@
 import requests
 
 def json_read_cat(position,name_category):
-    re_name_category = name_category.replace("(", "").replace(")", "").replace("/", "").replace(" ", "-").lower()
+    re_name_category = name_category.replace("(", "").replace(")", "").replace("/", "").replace(" ", "-").replace(",","").lower()
     data_for_search = []
 
     # !!!! dangerously. If None in page, I stop function (eazy find bot)
@@ -9,6 +9,7 @@ def json_read_cat(position,name_category):
     while True:
         i = i + 1; page_data_for_search = []
         url = f"https://www.vendr.com/categories/{position}/{re_name_category}?page={i}&_data=routes%2F_marketplace.categories.%24categorySlug.%24subCategorySlug._index"
+        print(url)
         params = {
             "facets": [],
             "sortParam": "RELEVANCE",
@@ -26,6 +27,7 @@ def json_read_cat(position,name_category):
 
         for js_companies in json_work_space["companies"]:
             slug = "".join(["https://www.vendr.com/marketplace/",js_companies["slug"]])
+            print(slug)
 
             data_for_search.append(slug)
             page_data_for_search.append(slug)

@@ -36,3 +36,9 @@ https://www.vendr.com/marketplace/outsystems
 ### I think it is don't random class
 example: rt-r-weight-bold
 rt-r- (in linux usualy say about, layer use or see)
+
+# big problem. A lot of page for check
+
+![img.png](photo_md/img5_complete.png)
+
+complete all element. It is mean all url work correct without **'try'**
