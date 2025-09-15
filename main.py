@@ -23,7 +23,11 @@ class Vendr:
 
     def main_directory(self,positions):
         # create all necessary url products
-        self.open_categories(positions)
+        with ThreadPoolExecutor(max_workers=5) as thread_position:
+            list(tqdm(thread_position.map(self.open_categories,positions), total=len(positions)))
+
+        # for position in positions:
+        #     self.open_categories(position)
 
         # thread_category = threading.Thread(target = self.open_categories, args = positions)
         # thread_category.start()
@@ -33,10 +37,8 @@ class Vendr:
         # Get all necessary data from url elements
         # for url_product in tqdm(self.url_products):
         #     #print(url_product)
-        thread_product = ThreadPoolExecutor(max_workers = 5)
-        list(tqdm(thread_product.map(self.get_data,self.url_products), total=len(self.url_products)))
-
-
+        with ThreadPoolExecutor(max_workers = 5) as thread_product:
+            list(tqdm(thread_product.map(self.get_data,self.url_products), total=len(self.url_products)))
 
 
 
@@ -116,26 +118,23 @@ class Vendr:
         )
 
 
-
     # work with catalog
-    def open_categories(self,positions):
+    def open_categories(self,position):
         # create url for all profession
-        for position in positions:
-            position_text = position.replace(" ", "-").lower()
-            url_position = f"https://www.vendr.com/categories/{position_text}"
 
-            profession_page = requests.get(url_position, headers = self.header)
-            career_soup = BeautifulSoup(profession_page.content, "lxml")
+        position_text = position.replace(" ", "-").lower()
+        url_position = f"https://www.vendr.com/categories/{position_text}"
 
-            for parse_category in career_soup.find_all("h2"):
-                if (parse_category.text == "Browse all categories") | (parse_category.text[:10] == "Categories"):
-                    continue
-                # !!! wait can be error Devops change on another
-                array_jrcts =json_read_catalog.json_read_cat(position_text, parse_category.text)
-                for array_jrct in array_jrcts:
-                    self.url_products.append(array_jrct)
+        profession_page = requests.get(url_position, headers = self.header)
+        career_soup = BeautifulSoup(profession_page.content, "lxml")
 
-
+        for parse_category in career_soup.find_all("h2"):
+            if (parse_category.text == "Browse all categories") | (parse_category.text[:10] == "Categories"):
+                continue
+            # !!! wait can be error Devops change on another
+            array_jrcts =json_read_catalog.json_read_cat(position_text, parse_category.text)
+            for array_jrct in array_jrcts:
+                self.url_products.append(array_jrct)
 
 
 if __name__ == "__main__":
