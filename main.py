@@ -4,9 +4,13 @@ import json_read_catalog
 from tqdm import tqdm
 import connect_database
 
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 
 class Vendr:
     def __init__(self):
+        # self.name_company=None; self.median_salary=None; self.min_salary=None; self.max_salary=None; self.describe=None
         self.products_url = [] # save products_url
         # create url element for work
         self.url_positions = [] # save all catalog company
@@ -21,14 +25,19 @@ class Vendr:
         # create all necessary url products
         self.open_categories(positions)
 
-        # Get all necessary data from url elements
-        for url_product in tqdm(self.url_products):
-            #print(url_product)
-            self.get_data(url_product)
+        # thread_category = threading.Thread(target = self.open_categories, args = positions)
+        # thread_category.start()
+        # thread_category.join()
+        print(self.url_positions)
 
-        # without necessary, and this unnecessary
-        # because pull in sqlbase faster return back and create second threads
-        # Ok. at the moment. I spend 28:55
+        # Get all necessary data from url elements
+        # for url_product in tqdm(self.url_products):
+        #     #print(url_product)
+        thread_product = ThreadPoolExecutor(max_workers = 5)
+        list(tqdm(thread_product.map(self.get_data,self.url_products), total=len(self.url_products)))
+
+
+
 
 
     def get_data(self,url_product):
@@ -80,6 +89,7 @@ class Vendr:
             try:describe = describe.strip()
             except:describe = None
 
+
         # Element for SQL
         print(name_company)
         print(median_salary)
@@ -87,6 +97,16 @@ class Vendr:
         print(max_salary)
         print(describe)
         # create row in SQL
+        # threading.Thread(target = connect_database.create_row,
+        #                  args= (
+        #     name_company
+        #     ,min_salary
+        #     ,median_salary
+        #     ,max_salary
+        #     ,describe
+        # )
+        #                  )
+
         connect_database.create_row(
             name_company
             ,min_salary
@@ -95,13 +115,10 @@ class Vendr:
             ,describe
         )
 
-        for min_salar in soup_product.find_all("span",class_="v-fw-600 v-fs-12"):
-            print(min_salar.text)
 
 
     # work with catalog
     def open_categories(self,positions):
-
         # create url for all profession
         for position in positions:
             position_text = position.replace(" ", "-").lower()
@@ -109,7 +126,6 @@ class Vendr:
 
             profession_page = requests.get(url_position, headers = self.header)
             career_soup = BeautifulSoup(profession_page.content, "lxml")
-
 
             for parse_category in career_soup.find_all("h2"):
                 if (parse_category.text == "Browse all categories") | (parse_category.text[:10] == "Categories"):
