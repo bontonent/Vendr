@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import json_read_catalog
 from tqdm import tqdm
+import connect_database
 
 class Vendr:
     def __init__(self):
@@ -30,9 +31,11 @@ class Vendr:
         # create sou
         product_page = requests.get(url_product, headers=self.header)
         soup_product = BeautifulSoup(product_page.content, "lxml")
-
+        print(url_product)
         for query_name in soup_product.find_all("h1"):
             name_company = query_name.text.replace("What is ","")
+            if name_company == "Sorry, we couldn't load this page. Please try again later." or name_company=="There was a problem loading this page. Please try again later.":
+                return
         for i_salary,query_salary in enumerate(soup_product.find_all("span",class_="v-fw-600")):
             if i_salary == 1:
                 min_salary = query_salary.text
@@ -43,15 +46,50 @@ class Vendr:
         for query_describe in soup_product.find_all("p",class_="rt-Text"):
             describe = query_describe.text
 
-        # Element for SQL
-        # print(name_company)
-        # print(int(median_salary.replace("$","")))
-        # print(int(min_salary.replace("$","")))
-        # print(int(max_salary.replace("$","")))
-        # print(describe.strip())
+        if name_company == None:
+            name_company = None
+        else:
+            try:name_company = name_company
+            except:name_company=None
+        if median_salary == None:
+            median_salary = None
+        else:
+            try:median_salary = float(median_salary.replace("$", "").replace(",", "."))
+            except:median_salary = None
+        if min_salary == None:
+            min_salary = None
+        else:
+            try:min_salary = float(min_salary.replace("$", "").replace(",", "."))
+            except:min_salary = None
+        if max_salary == None:
+            max_salary = None
+        else:
+            try:max_salary = float(max_salary.replace("$", "").replace(",", "."))
+            except:max_salary=None
+        if describe == None:
+            describe = None
+        else:
+            try:describe = describe.strip()
+            except:describe = None
 
-        # for min_salar in soup_product.find_all("span",class_="v-fw-600 v-fs-12"):
-        #     print(min_salar.text)
+
+
+        # Element for SQL
+        print(name_company)
+        print(median_salary)
+        print(min_salary)
+        print(max_salary)
+        print(describe)
+        connect_database.create_row(
+            name_company
+            ,min_salary
+            ,median_salary
+            ,max_salary
+            ,describe
+        )
+
+        for min_salar in soup_product.find_all("span",class_="v-fw-600 v-fs-12"):
+            print(min_salar.text)
 
 
     # work with catalog
@@ -79,7 +117,10 @@ class Vendr:
 
 if __name__ == "__main__":
     # we get work positions
-    positions = ["IT Infrastructure", "DevOps", "Data Analytics and Management"]
+    positions = ["IT Infrastructure"
+        #, "DevOps"
+        #, "Data Analytics and Management"
+                 ]
     Vendr = Vendr()
     # start work with url element
     Vendr.main_directory(positions)
