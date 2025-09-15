@@ -4,6 +4,7 @@ import json_read_catalog
 from tqdm import tqdm
 import connect_database
 
+
 class Vendr:
     def __init__(self):
         self.products_url = [] # save products_url
@@ -25,6 +26,11 @@ class Vendr:
             #print(url_product)
             self.get_data(url_product)
 
+        # without necessary, and this unnecessary
+        # because pull in sqlbase faster return back and create second threads
+        # Ok. at the moment. I spend 28:55
+
+
     def get_data(self,url_product):
         # clear all data
         name_company = None;median_salary = None;min_salary = None;max_salary = None;describe = None
@@ -41,11 +47,13 @@ class Vendr:
                 min_salary = query_salary.text
             if i_salary == 2:
                 max_salary = query_salary.text
+        # bad decision
         for query_salary in soup_product.find_all("div",class_="rt-Flex _rangeAverage_118fo_42"):
             median_salary = query_salary.text.replace("Median: ","")
         for query_describe in soup_product.find_all("p",class_="rt-Text"):
             describe = query_describe.text
 
+        # if Don't None change something
         if name_company == None:
             name_company = None
         else:
@@ -72,14 +80,13 @@ class Vendr:
             try:describe = describe.strip()
             except:describe = None
 
-
-
         # Element for SQL
         print(name_company)
         print(median_salary)
         print(min_salary)
         print(max_salary)
         print(describe)
+        # create row in SQL
         connect_database.create_row(
             name_company
             ,min_salary
