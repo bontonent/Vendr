@@ -20,14 +20,14 @@ def connect_to_db():
     return conn, cur
 
 # Create new row in DB
-def create_row(name_company,min_salary, mad_salary, max_salary, describe):
+def create_row(category,uncategory,name_company,min_salary, mad_salary, max_salary, describe):
     # Connect to DB
     conn, cur = connect_to_db()
 
     # Script
     cur.execute(
-        f"INSERT INTO products(name_company,min_salary, mad_salary, max_salary, describe) "
-        f"VALUES(%s,%s,%s,%s,%s)",(name_company,min_salary,mad_salary,max_salary,describe))
+        f"INSERT INTO products(name_main_category,name_uncategory,name_product,min_salary, mad_salary, max_salary, describe) "
+        f"VALUES(%s,%s,%s,%s,%s,%s,%s)",(category,uncategory,name_company,min_salary,mad_salary,max_salary,describe))
     conn.commit()
 
     # Close DB
@@ -62,6 +62,3 @@ def view_all_rows():
 
     # Close DB
     cur.close()
-
-
-

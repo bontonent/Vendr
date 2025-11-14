@@ -2,12 +2,15 @@
 import requests
 from bs4 import BeautifulSoup
 import json_read_catalog
-# time load library
+
+# Еime load library
 from tqdm import tqdm
-# connect database .py
+
+# Сonnect database .py
 import connect_database
+
 # create thread
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
 class Vendr:
@@ -23,26 +26,48 @@ class Vendr:
 
     # main round
     def main_directory(self,positions):
+        max_workers = 5
+        time_delay = 3
+        retries_work = 1
+        futures = {}
         # create url products
-        with ThreadPoolExecutor(max_workers=5) as thread_position:
-            list(
-                tqdm(
-                    thread_position.map(self.open_categories,positions)
-                    , total=len(positions)
-                )
-            )
 
-        # Work with page url
-        with ThreadPoolExecutor(max_workers = 5) as thread_product:
-            list(
-                tqdm(
-                    thread_product.map(self.get_data,self.url_products)
-                    , total=len(self.url_products)
-                )
-            )
+        with ThreadPoolExecutor(max_workers=max_workers) as thread_position:
+            for position in positions:
+                futures[thread_position.submit(self.open_categories,position)] = position
+            for fur in tqdm(as_completed(futures), total= len(futures)):
+                try:
+                    fut.result(timeout=time_delay)
+                except Exception as e:
+                    if retries_work < 1:
+                        for ret in range(retries_work):
+                            try:
+                                fut.result(timeout=time_delay)
+                                break
+                            except Exception as e:
+                                None
+                                continue
+                            
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as thread_position:
+            for url_product in self.url_products:
+                futures[thread_position.submit(self.get_data,url_product)] = url_product
+            for fur in tqdm(as_completed(futures), total= len(futures)):
+                try:
+                    fut.result(timeout=time_delay)
+                except Exception as e:
+                    if retries_work < 1:
+                        for ret in range(retries_work):
+                            try:
+                                fut.result(timeout=time_delay)
+                                break
+                            except Exception as e:
+                                None
+                                continue
 
     # Get data from products pages
-    def get_data(self,url_product):
+    def get_data(self,url_product_more):
+        url_product = url_product_more[0]
         # Clear all data
         name_company = None;median_salary = None;min_salary = None;max_salary = None;describe = None
 
@@ -111,6 +136,8 @@ class Vendr:
 
 
         # Print all data
+        print(url_product_more[1])
+        print(url_product_more[2])
         print(name_company)
         print(median_salary)
         print(min_salary)
@@ -121,7 +148,9 @@ class Vendr:
         thread_db = threading.Thread(
             target = connect_database.create_row
             , args= (
-                name_company
+                url_product_more[1]
+                ,url_product_more[2]
+                ,name_company
                 ,min_salary
                 ,median_salary
                 ,max_salary
@@ -144,19 +173,31 @@ class Vendr:
         for parse_category in career_soup.find_all("h2"):
             if (parse_category.text == "Browse all categories") | (parse_category.text[:10] == "Categories"):
                 continue
-
+            category = parse_category.text
             # Open json script
             array_jrcts = json_read_catalog.json_read_cat(position_text, parse_category.text)
             for array_jrct in array_jrcts:
-                self.url_products.append(array_jrct)
+                self.url_products.append([array_jrct, position, category])
 
 
 if __name__ == "__main__":
     # Name positions for scrapy
-    positions = ["IT Infrastructure"
+    positions = [
+        "IT Infrastructure"
         , "DevOps"
         , "Data Analytics and Management"
-                 ]
+        , "Collaboration and Communication"
+        , "Commerce and Retail"
+        , "Customer Support"
+        , "Design and Content Tool"
+        , "Finance and Accounting"
+        , "Human Resources"
+        , "Marketing and Advertising"
+        , "Productivity"
+        , "Sales"
+        , "Security and Compliance"
+        , "Vertical Industries"
+    ]
     # init class
     Vendr = Vendr()
     Vendr.main_directory(positions)
