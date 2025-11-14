@@ -57,7 +57,7 @@ def view_all_rows():
     cur.execute("SELECT * FROM products")
 
     #View
-    db_version = cur.fetchone()
+    db_version = cur.fetchall()
     print(db_version)
 
     # Close DB
